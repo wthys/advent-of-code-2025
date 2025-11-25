@@ -12,7 +12,7 @@ binary in the `bin` folder.
 ## Running
 
 The `aoc2025` binary has two commands: `input` and `run`. Both require a
-specific day (so `1` for day 1, `2` for day 2 and so on until day 25). The
+specific day (so `1` for day 1, `2` for day 2 and so on until day 12). The
 `input` command also requires a session token that you can set in the
 `AOC_SESSION` environment variable or as a value to the `-s/--session`
 parameter. See `aoc2025 --help` for more info.
