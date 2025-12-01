@@ -118,7 +118,7 @@ func createInputReq(ctx context.Context, d string, sessionID string) (*http.Requ
 		return nil, fmt.Errorf("parse base url: %w", err)
 	}
 
-	u.Path = path.Join(u.Path, "2024", day, d, input)
+	u.Path = path.Join(u.Path, "2025", day, d, input)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), http.NoBody)
 	if err != nil {
