@@ -125,11 +125,14 @@ func ExtractRegex(pattern, line string) []string {
 func StringsToInts(values []string) ([]int, error) {
 	ints := []int{}
 	for _, value := range values {
-		v, err := strconv.Atoi(value)
+		v, err := StringToInt(value)
 		if err != nil {
 			return nil, err
 		}
 		ints = append(ints, v)
 	}
 	return ints, nil
+}
+func StringToInt(value string) (int, error) {
+	return strconv.Atoi(value)
 }
