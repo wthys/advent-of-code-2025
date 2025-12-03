@@ -62,7 +62,8 @@ func (s solution) Part2(input []string, opts solver.Options) (string, error) {
 		low := fmt.Sprint(rng.Lower())
 		high := fmt.Sprint(rng.Upper())
 
-		for length := 1; length <= util.Max(len(low), len(high))/2; length+= 1 {
+		lengths := divisors(len(low)).Union(divisors(len(high)))
+		lengths.ForEach(func(length int) {
 			lowreps := len(low) / length
 			hireps := len(high) / length
 			if lowreps != hireps {
@@ -71,10 +72,7 @@ func (s solution) Part2(input []string, opts solver.Options) (string, error) {
 			
 			for n := pow(10, length - 1); n < pow(10, length); n += 1 {
 				pattern := fmt.Sprint(n)
-				for reps := lowreps; reps <= hireps; reps += 1 {
-					if reps < 2 {
-						continue
-					}
+				for reps := util.Max(2, lowreps); reps <= hireps; reps += 1 {
 					repeated := strings.Repeat(pattern, reps)
 					// opts.Debugf("  checking %v in %v/%vx%v\n", repeated, rng, length, reps)
 					num, _ := strconv.Atoi(repeated)
@@ -84,7 +82,7 @@ func (s solution) Part2(input []string, opts solver.Options) (string, error) {
 					}
 				}
 			}
-		}
+		})
 	}
 
 	total := 0
