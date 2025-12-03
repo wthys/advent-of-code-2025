@@ -35,7 +35,19 @@ func (s solution) Part1(input []string, opts solver.Options) (string, error) {
 }
 
 func (s solution) Part2(input []string, opts solver.Options) (string, error) {
-	return solver.NotImplemented()
+	banks, err := readInput(input)
+	if err != nil {
+		return solver.Error(err)
+	}
+
+	total := 0
+	for _, bank := range banks {
+		joltage := bank.MaxJoltageN(12)
+		opts.Debugf("checking %v => max %v\n", bank, joltage)
+		total += joltage
+	}
+
+	return solver.Solved(total)
 }
 
 type (
@@ -97,4 +109,24 @@ func (b Bank) MaxJoltage() int {
 		}
 	}
 	return 10 * maxFirst + maxSecond
+}
+
+func (b Bank) MaxJoltageN(n int) int {
+	earliestIdx := 0
+	joltage := 0
+
+	for digit := 0; digit < n; digit += 1 {
+		max := -1
+		maxIdx := -1
+		for idx, lbl := range b[earliestIdx:len(b)-(n-digit-1)] {
+			if lbl > max {
+				max = lbl
+				maxIdx = idx
+			}
+		}
+		joltage = 10 * joltage + max
+		earliestIdx += maxIdx + 1
+	}
+
+	return joltage
 }
