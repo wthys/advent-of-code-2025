@@ -38,7 +38,19 @@ func (s solution) Part1(input []string, opts solver.Options) (string, error) {
 }
 
 func (s solution) Part2(input []string, opts solver.Options) (string, error) {
-	return solver.NotImplemented()
+	freshdb, _, err := readInput(input)
+	if err != nil {
+		return solver.Error(err)
+	}
+
+	total := 0
+	freshdb = freshdb.Compact()
+
+	for _, ivl := range freshdb {
+		total += ivl.Len()
+	}
+
+	return solver.Solved(total)
 }
 
 func readInput(input []string) (I.Intervals, []int, error) {
