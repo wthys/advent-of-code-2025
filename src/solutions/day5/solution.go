@@ -1,7 +1,11 @@
 package day5
 
 import (
+	"fmt"
+
 	"github.com/wthys/advent-of-code-2025/solver"
+	"github.com/wthys/advent-of-code-2025/util"
+	I "github.com/wthys/advent-of-code-2025/util/interval"
 )
 
 type solution struct{}
@@ -15,9 +19,46 @@ func (s solution) Day() string {
 }
 
 func (s solution) Part1(input []string, opts solver.Options) (string, error) {
-	return solver.NotImplemented()
+	freshdb, ingredients, err := readInput(input)
+	if err != nil {
+		return solver.Error(err)
+	}
+
+	not_spoiled := 0
+	for _, ing := range ingredients {
+
+		fresh := freshdb.Contains(ing)
+		opts.Debugf("%v is fresh? %t\n", ing, fresh)
+		if fresh {
+			not_spoiled += 1
+		}
+	}
+
+	return solver.Solved(not_spoiled)
 }
 
 func (s solution) Part2(input []string, opts solver.Options) (string, error) {
 	return solver.NotImplemented()
+}
+
+func readInput(input []string) (I.Intervals, []int, error) {
+	fresh := I.Intervals{}
+	ingredients := []int{}
+
+	for _, line := range input {
+		nums, _ := util.StringsToInts(util.ExtractRegex("[0-9]+", line))
+
+		if len(nums) == 2 {
+			fresh = append(fresh, I.New(nums[0], nums[1]))
+		} else if len(nums) == 1 {
+			ingredients = append(ingredients, nums[0])
+		}
+
+	}
+
+	if len(fresh) == 0 && len(ingredients) == 0 {
+		return I.Intervals{}, []int{}, fmt.Errorf("no db contents found")
+	}
+
+	return fresh, ingredients, nil
 }
