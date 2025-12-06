@@ -47,6 +47,7 @@ func (r *Result) AddAnswers(s Solver, input []string, ctx context.Context) error
 
     var start time.Time
 
+    opts.Debugf("===== BEGIN DAY %v PART 1 =====\n", s.Day())
     if (elapsed) {
         start = time.Now()
     }
@@ -54,10 +55,12 @@ func (r *Result) AddAnswers(s Solver, input []string, ctx context.Context) error
     if (elapsed) {
         durations = append(durations, time.Since(start))
     }
+    opts.Debugf("===== END DAY %v PART 1 =====\n", s.Day())
     if err != nil && !errors.Is(err, ErrNotImplemented) {
         return fmt.Errorf("failed to solve Part1: %w", err)
     }
 
+    opts.Debugf("===== BEGIN DAY %v PART 2 =====\n", s.Day())
     if (elapsed) {
         start = time.Now()
     }
@@ -65,6 +68,7 @@ func (r *Result) AddAnswers(s Solver, input []string, ctx context.Context) error
     if (elapsed) {
         durations = append(durations, time.Since(start))
     }
+    opts.Debugf("===== END DAY %v PART 2 =====\n", s.Day())
     if err != nil && !errors.Is(err, ErrNotImplemented) {
         return fmt.Errorf("failed to solve Part2: %w", err)
     }
