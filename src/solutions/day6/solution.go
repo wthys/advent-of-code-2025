@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"strconv"
 	
 	"github.com/wthys/advent-of-code-2025/solver"
 	"github.com/wthys/advent-of-code-2025/util"
@@ -36,7 +37,19 @@ func (s solution) Part1(input []string, opts solver.Options) (string, error) {
 }
 
 func (s solution) Part2(input []string, opts solver.Options) (string, error) {
-	return solver.NotImplemented()
+	problems, err := readInput2(input)
+	if err != nil {
+		return solver.Error(err)
+	}
+
+	total := 0
+	for _, problem := range problems {
+		result := problem.Solve()
+		opts.Debugf("%v => %v\n", problem, result)
+		total += result
+	}
+
+	return solver.Solved(total)
 }
 
 var (
@@ -113,4 +126,50 @@ func (p Problem) Solve() int {
 		sum += n
 	}
 	return sum
+}
+
+func readInput2(input []string) ([]Problem, error) {
+	lastline := -1
+	longest := -1
+
+	for no, line := range input {
+		if re_opers.MatchString(line) {
+			lastline = no
+			break
+		}
+		longest = util.Max(longest, len(line))
+	}
+
+	if lastline < 0 {
+		return []Problem{}, fmt.Errorf("no opers found")
+	}
+
+	indexes := []int{}
+	for idx, ch := range input[lastline] {
+		if re_opers.MatchString(string(ch)) {
+			indexes = append(indexes, idx)
+		}
+	}
+	indexes = append(indexes, longest+1)
+
+	problems := []Problem{}
+	re_num := regexp.MustCompile("[0-9]")
+	util.PairWiseDo(indexes, func(start, next int) {
+		values := []int{}
+		for idx := start; idx < next - 1; idx += 1 {
+			num := 0
+			for _, line := range input[:lastline] {
+				lll := fmt.Sprintf("%v%v", line, strings.Repeat(" ", next - start))
+				ds := string(lll[idx])
+				if re_num.MatchString(ds) {
+					d, _ := strconv.Atoi(ds)
+					num = 10 * num + d
+				}
+			}
+			values = append(values, num)
+		}
+		problems = append(problems, Problem{values, string(input[lastline][start])})
+	})
+
+	return problems, nil
 }
