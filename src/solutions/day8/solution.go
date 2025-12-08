@@ -1,7 +1,13 @@
 package day8
 
 import (
+	"fmt"
+	"slices"
+
 	"github.com/wthys/advent-of-code-2025/solver"
+	"github.com/wthys/advent-of-code-2025/util"
+	L "github.com/wthys/advent-of-code-2025/location"
+	S "github.com/wthys/advent-of-code-2025/collections/set"
 )
 
 type solution struct{}
@@ -15,9 +21,137 @@ func (s solution) Day() string {
 }
 
 func (s solution) Part1(input []string, opts solver.Options) (string, error) {
-	return solver.NotImplemented()
+	junctions, err := readInput(input)
+	if err != nil {
+		return solver.Error(err)
+	}
+
+	example := len(input) < 25
+
+
+	circuits := []*S.Set[L.Location3]{}
+	dists := []edge{}
+	for iA, juncA := range junctions[:len(junctions)-1] {
+		circuits = append(circuits, S.New(juncA))
+
+		for _, juncB := range junctions[:iA+1] {
+			if juncA == juncB {
+				continue
+			}
+			e := edge{juncA, juncB, juncA.Subtract(juncB).Magnitude()}
+			dists = append(dists, e)
+		}
+	}
+
+	slices.SortFunc(dists, func(a, b edge) int {
+		if a.dist < b.dist {
+			return -1
+		}
+		if a.dist > b.dist {
+			return 1
+		}
+		return 0
+	})
+
+	findCircuit := func(junc L.Location3) (int, *S.Set[L.Location3]) {
+		for idx, circ := range circuits {
+			if circ.Has(junc) {
+				return idx, circ
+			}
+		}
+		return -1, nil
+	}
+
+	asSizes := func(cs []*S.Set[L.Location3]) []int {
+		return mapFunc(cs, func(circ *S.Set[L.Location3]) int {
+			return circ.Len()
+		})
+	}
+
+	connections := 0
+	for _, shortest := range dists {
+		lidx, lcirc := findCircuit(shortest.from)
+		ridx, rcirc := findCircuit(shortest.to)
+
+		if lidx == ridx {
+			connections += 1
+			continue
+		}
+		
+		connections += 1
+		newcircs := []*S.Set[L.Location3]{}
+		for idx, circ := range circuits {
+			if idx == lidx || idx == ridx {
+				continue
+			}
+
+			newcircs = append(newcircs, circ)
+		}
+
+		circuits = append(newcircs, lcirc.Union(rcirc))
+
+		opts.Debugf("_ made connection #%v: %v -> %v | %v\n", connections, shortest.from, shortest.to, asSizes(circuits))
+		if example && connections >= 10-1 || connections >= 1000-1 {
+			break
+		}
+	}
+
+	sizes := asSizes(circuits)
+	slices.SortFunc(sizes, func(a, b int) int {
+		return a-b
+	})
+	slices.Reverse(sizes)
+
+	prod := 1
+	for _, s := range sizes[:3] {
+		prod *= s
+	}
+
+	opts.Debugf(" sizes: %v\n circuits: %v\n", sizes, len(circuits))
+	return solver.Solved(prod)
 }
 
 func (s solution) Part2(input []string, opts solver.Options) (string, error) {
 	return solver.NotImplemented()
+}
+
+
+func readInput(input []string) (L.Locations3, error) {
+	junctions := L.Locations3{}
+
+	for no, line := range input {
+		nums := util.ExtractInts(line)
+
+		if len(nums) == 0 {
+			continue
+		}
+
+		if len(nums) < 3 {
+			return L.Locations3{}, fmt.Errorf("line %v: not enough numbers, expected 3", no + 1)
+		}
+
+		junctions = append(junctions, L.New3(nums[0], nums[1], nums[2]))
+	}
+
+	if len(junctions) == 0 {
+		return L.Locations3{}, fmt.Errorf("no junctions provided")
+	}
+
+	return junctions, nil
+}
+
+type (
+	edge struct {
+		from L.Location3
+		to L.Location3
+		dist float64
+	}
+)
+
+func mapFunc[T any, R any](input []T, transform func(T) R) []R {
+	result := []R{}
+	for _, v := range input {
+		result = append(result, transform(v))
+	}
+	return result
 }
