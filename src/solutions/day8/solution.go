@@ -83,7 +83,55 @@ func (s solution) Part1(input []string, opts solver.Options) (string, error) {
 }
 
 func (s solution) Part2(input []string, opts solver.Options) (string, error) {
-	return solver.NotImplemented()
+	junctions, err := readInput(input)
+	if err != nil {
+		return solver.Error(err)
+	}
+
+	circuits, dists := initCircuits(junctions)
+
+	findCircuit := func(junc L.Location3) (int, *S.Set[L.Location3]) {
+		for idx, circ := range circuits {
+			if circ.Has(junc) {
+				return idx, circ
+			}
+		}
+		return -1, nil
+	}
+
+	connections := 0
+	lastX1 := -1
+	lastX2 := -1
+	for _, shortest := range dists {
+		lidx, lcirc := findCircuit(shortest.from)
+		ridx, rcirc := findCircuit(shortest.to)
+
+		if lidx == ridx {
+			connections += 1
+			continue
+		}
+		
+		connections += 1
+		newcircs := []*S.Set[L.Location3]{}
+		for idx, circ := range circuits {
+			if idx == lidx || idx == ridx {
+				continue
+			}
+
+			newcircs = append(newcircs, circ)
+		}
+
+		circuits = append(newcircs, lcirc.Union(rcirc))
+
+		opts.Debugf("_ made connection #%v: %v -> %v | %v\n", connections, shortest.from, shortest.to, asSizes(circuits))
+		if len(circuits) == 1 {
+			lastX1 = shortest.from.X
+			lastX2 = shortest.to.X
+			break
+		}
+	}
+
+	return solver.Solved(lastX1 * lastX2)
 }
 
 
