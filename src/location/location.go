@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"math"
 
 	"github.com/wthys/advent-of-code-2025/util"
 )
@@ -113,6 +114,10 @@ func (l Location) Manhattan() int {
 	return util.Abs(l.X) + util.Abs(l.Y)
 }
 
+func (l Location) Magnitude() float64 {
+	return math.Sqrt(float64(l.X * l.X + l.Y * l.Y))
+}
+
 func (l Location3) String() string {
 	return fmt.Sprintf("(%d,%d,%d)", l.X, l.Y, l.Z)
 }
@@ -135,6 +140,10 @@ func (l Location3) Unit() Location3 {
 
 func (l Location3) Manhattan() int {
 	return util.Abs(l.X) + util.Abs(l.Y) + util.Abs(l.Z)
+}
+
+func (l Location3) Magnitude() float64 {
+	return math.Sqrt(float64(l.X * l.X + l.Y * l.Y + l.Z * l.Z))
 }
 
 func (l Location) Neejbers() Locations {
