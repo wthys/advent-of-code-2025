@@ -28,30 +28,7 @@ func (s solution) Part1(input []string, opts solver.Options) (string, error) {
 
 	example := len(input) < 25
 
-
-	circuits := []*S.Set[L.Location3]{}
-	dists := []edge{}
-	for iA, juncA := range junctions[:len(junctions)-1] {
-		circuits = append(circuits, S.New(juncA))
-
-		for _, juncB := range junctions[:iA+1] {
-			if juncA == juncB {
-				continue
-			}
-			e := edge{juncA, juncB, juncA.Subtract(juncB).Magnitude()}
-			dists = append(dists, e)
-		}
-	}
-
-	slices.SortFunc(dists, func(a, b edge) int {
-		if a.dist < b.dist {
-			return -1
-		}
-		if a.dist > b.dist {
-			return 1
-		}
-		return 0
-	})
+	circuits, dists := initCircuits(junctions)
 
 	findCircuit := func(junc L.Location3) (int, *S.Set[L.Location3]) {
 		for idx, circ := range circuits {
@@ -60,12 +37,6 @@ func (s solution) Part1(input []string, opts solver.Options) (string, error) {
 			}
 		}
 		return -1, nil
-	}
-
-	asSizes := func(cs []*S.Set[L.Location3]) []int {
-		return mapFunc(cs, func(circ *S.Set[L.Location3]) int {
-			return circ.Len()
-		})
 	}
 
 	connections := 0
@@ -154,4 +125,38 @@ func mapFunc[T any, R any](input []T, transform func(T) R) []R {
 		result = append(result, transform(v))
 	}
 	return result
+}
+
+func asSizes (cs []*S.Set[L.Location3]) []int {
+	return mapFunc(cs, func(circ *S.Set[L.Location3]) int {
+		return circ.Len()
+	})
+}
+
+func initCircuits(junctions L.Locations3) ([]*S.Set[L.Location3], []edge) {
+	circuits := []*S.Set[L.Location3]{}
+	dists := []edge{}
+	for iA, juncA := range junctions[:len(junctions)-1] {
+		circuits = append(circuits, S.New(juncA))
+
+		for _, juncB := range junctions[:iA+1] {
+			if juncA == juncB {
+				continue
+			}
+			e := edge{juncA, juncB, juncA.Subtract(juncB).Magnitude()}
+			dists = append(dists, e)
+		}
+	}
+
+	slices.SortFunc(dists, func(a, b edge) int {
+		if a.dist < b.dist {
+			return -1
+		}
+		if a.dist > b.dist {
+			return 1
+		}
+		return 0
+	})
+
+	return circuits, dists
 }
