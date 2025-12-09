@@ -118,6 +118,10 @@ func (l Location) Magnitude() float64 {
 	return math.Sqrt(float64(l.X * l.X + l.Y * l.Y))
 }
 
+func (l Location) Abs() Location {
+	return New(util.Abs(l.X), util.Abs(l.Y))
+}
+
 func (l Location3) String() string {
 	return fmt.Sprintf("(%d,%d,%d)", l.X, l.Y, l.Z)
 }
@@ -144,6 +148,10 @@ func (l Location3) Manhattan() int {
 
 func (l Location3) Magnitude() float64 {
 	return math.Sqrt(float64(l.X * l.X + l.Y * l.Y + l.Z * l.Z))
+}
+
+func (l Location3) Abs() Location3 {
+	return New3(util.Abs(l.X), util.Abs(l.Y), util.Abs(l.Z))
 }
 
 func (l Location) Neejbers() Locations {
