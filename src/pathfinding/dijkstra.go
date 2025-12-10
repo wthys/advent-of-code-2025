@@ -70,7 +70,12 @@ func ControlledDijkstra[T comparable](start T, neejbers NeejberFunc[T], exitters
 				from[node] = set.New(node)
 				prev[neejber] = &node
 			} else if alt <= ndist {
-				from[neejber].Add(node)
+				s, _ := from[neejber]
+				if s == nil {
+					s = set.New(node)
+					from[neejber] = s
+				}
+				s.Add(node)
 			}
 		}
 	}
