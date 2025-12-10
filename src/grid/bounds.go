@@ -2,6 +2,7 @@ package grid
 
 import (
 	L "github.com/wthys/advent-of-code-2025/location"
+	I "github.com/wthys/advent-of-code-2025/util/interval"
 )
 
 type (
@@ -31,6 +32,30 @@ func (b Bounds) Accomodate(loc L.Location) Bounds {
 	return newb
 }
 
+func (b Bounds) TopLeft() L.Location {
+	return L.New(b.Xmin, b.Ymin)
+}
+
+func (b Bounds) TopRight() L.Location {
+	return L.New(b.Xmax, b.Ymin)
+}
+
+func (b Bounds) BottomLeft() L.Location {
+	return L.New(b.Xmin, b.Ymax)
+}
+
+func (b Bounds) BottomRight() L.Location {
+	return L.New(b.Xmax, b.Ymax)
+}
+
+func (b Bounds) Intersects(o Bounds) bool {
+	bx := I.New(b.Xmin, b.Xmax)
+	by := I.New(b.Ymin, b.Ymax)
+	ox := I.New(o.Xmin, o.Xmax)
+	oy := I.New(o.Ymin, o.Ymax)
+	return bx.Intersects(ox) && by.Intersects(oy)
+} 
+
 func BoundsFromLocation(loc L.Location) Bounds {
 	b := Bounds{}
 	b.Xmin = loc.X
@@ -49,6 +74,10 @@ func BoundsFromSlice(locations L.Locations) Bounds {
 		b = b.Accomodate(loc)
 	}
 	return b
+}
+
+func BoundsFromLocations(locs ...L.Location) Bounds {
+	return BoundsFromSlice(locs)
 }
 
 func (b Bounds) ForEach(forEach func(loc L.Location)) {

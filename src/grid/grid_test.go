@@ -222,3 +222,30 @@ func TestBoundsHas(t *testing.T) {
 	contained(t, bounds, outside, false)
 
 }
+
+
+func intersects(t *testing.T, b Bounds, o Bounds, want bool) {
+	got := b.Intersects(o)
+	if got != want {
+		t.Fatalf("%v.Intersects(%v) should return %t, got %t", b, o, want, got)
+	}
+}
+
+func TestBoundsIntersects(t *testing.T) {
+	check := BoundsFromLocations(location.New(4,4), location.New(8,8))
+
+	top_disjoint := BoundsFromLocations(location.New(0,0), location.New(10,2))
+	bottom_disjoint := BoundsFromLocations(location.New(0,9), location.New(10,10))
+	left_disjoint := BoundsFromLocations(location.New(0,0), location.New(2,10))
+	right_disjoint := BoundsFromLocations(location.New(9,0), location.New(10,10))
+
+	intersects(t, check, top_disjoint, false)
+	intersects(t, check, bottom_disjoint, false)
+	intersects(t, check, left_disjoint, false)
+	intersects(t, check, right_disjoint, false)
+
+	intersects(t, top_disjoint, left_disjoint, true)
+	intersects(t, top_disjoint, right_disjoint, true)
+	intersects(t, bottom_disjoint, left_disjoint, true)
+	intersects(t, bottom_disjoint, left_disjoint, true)
+}

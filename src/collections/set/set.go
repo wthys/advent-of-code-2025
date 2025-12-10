@@ -19,11 +19,13 @@ type (
 
 /// Creates a new Set containing the provided values
 func New[T comparable](values ...T) *Set[T] {
+	return NewFromSlice(values)
+}
+
+/// Create a new Set based on a slice
+func NewFromSlice[T comparable](values []T) *Set[T] {
 	set := Set[T]{map[T]empty{}}
-	for _, value := range values {
-		set.Add(value)
-	}
-	return &set
+	return set.AddAll(values)
 }
 
 /// Creates an empty Set to contain elements like the argument

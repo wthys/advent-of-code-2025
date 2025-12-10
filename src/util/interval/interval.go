@@ -106,6 +106,10 @@ func (i Interval) Upper() int {
 	return i.high
 }
 
+func (this Interval) Intersects(that Interval) bool {
+	return !this.Intersect(that).IsEmpty()
+}
+
 func (this Interval) Intersect(that Interval) Interval {
 	if this.IsEmpty() || that.IsEmpty() {
 		return Empty()
