@@ -6,68 +6,87 @@ import (
 )
 
 type (
-	Bounds struct {
-		Xmin, Xmax, Ymin, Ymax int
+	Bounds interface {
+		Has(L.Location) bool
+		Width() int
+		Height() int
+		IsEmpty() bool
+
+		TopLeft() L.Location
+		TopRight() L.Location
+		BottomLeft() L.Location
+		BottomRight() L.Location
+
+		Intersects(Bounds) bool
+		Accomodate(L.Location) Bounds
+		ForEach(func(L.Location))
+	}
+
+	bounds struct {
+		X, Y I.Interval
 	}
 )
 
-func (b *Bounds) Has(loc L.Location) bool {
-	return loc.X >= b.Xmin && loc.X <= b.Xmax && loc.Y >= b.Ymin && loc.Y <= b.Ymax
+func (b bounds) Has(loc L.Location) bool {
+	return b.X.Contains(loc.X) && b.Y.Contains(loc.Y)
 }
 
-func (b Bounds) Width() int {
-	return b.Xmax - b.Xmin + 1
+func (b bounds) Width() int {
+	return b.X.Len()
 }
 
-func (b Bounds) Height() int {
-	return b.Ymax - b.Ymin + 1
+func (b bounds) Height() int {
+	return b.Y.Len()
 }
 
-func (b Bounds) Accomodate(loc L.Location) Bounds {
-	newb := b
-	newb.Xmin = min(b.Xmin, loc.X)
-	newb.Xmax = max(b.Xmax, loc.X)
-	newb.Ymin = min(b.Ymin, loc.Y)
-	newb.Ymax = max(b.Ymax, loc.Y)
-	return newb
+func (b bounds) IsEmpty() bool {
+	return b.X.IsEmpty() || b.Y.IsEmpty()
 }
 
-func (b Bounds) TopLeft() L.Location {
-	return L.New(b.Xmin, b.Ymin)
+func (b bounds) Accomodate(loc L.Location) Bounds {
+	if b.IsEmpty() {
+		return BoundsFromLocation(loc)
+	}
+
+	return bounds{
+		I.New(min(b.X.Lower(), loc.X), max(b.X.Upper(), loc.X)),
+		I.New(min(b.Y.Lower(), loc.Y), max(b.Y.Upper(), loc.Y)),
+	}
 }
 
-func (b Bounds) TopRight() L.Location {
-	return L.New(b.Xmax, b.Ymin)
+func (b bounds) TopLeft() L.Location {
+	return L.New(b.X.Lower(), b.Y.Lower())
 }
 
-func (b Bounds) BottomLeft() L.Location {
-	return L.New(b.Xmin, b.Ymax)
+func (b bounds) TopRight() L.Location {
+	return L.New(b.X.Upper(), b.Y.Lower())
 }
 
-func (b Bounds) BottomRight() L.Location {
-	return L.New(b.Xmax, b.Ymax)
+func (b bounds) BottomLeft() L.Location {
+	return L.New(b.X.Lower(), b.Y.Upper())
 }
 
-func (b Bounds) Intersects(o Bounds) bool {
-	bx := I.New(b.Xmin, b.Xmax)
-	by := I.New(b.Ymin, b.Ymax)
-	ox := I.New(o.Xmin, o.Xmax)
-	oy := I.New(o.Ymin, o.Ymax)
-	return bx.Intersects(ox) && by.Intersects(oy)
+func (b bounds) BottomRight() L.Location {
+	return L.New(b.X.Upper(), b.Y.Upper())
+}
+
+func (b bounds) Intersects(o Bounds) bool {
+	ob, ok := o.(bounds)
+	if !ok {
+		tl := o.TopLeft()
+		br := o.BottomRight()
+		ob = bounds{I.New(tl.X, br.X), I.New(tl.Y, br.Y)}
+	}
+	return b.X.Intersects(ob.X) && b.Y.Intersects(ob.Y)
 } 
 
 func BoundsFromLocation(loc L.Location) Bounds {
-	b := Bounds{}
-	b.Xmin = loc.X
-	b.Xmax = loc.X
-	b.Ymin = loc.Y
-	b.Ymax = loc.Y
-	return b
+	return bounds{I.New(loc.X, loc.X), I.New(loc.Y, loc.Y)}
 }
 
 func BoundsFromSlice(locations L.Locations) Bounds {
 	if len(locations) == 0 {
-		return Bounds{}
+		return BoundsEmpty()
 	}
 	b := BoundsFromLocation(locations[0])
 	for _, loc := range locations {
@@ -80,9 +99,17 @@ func BoundsFromLocations(locs ...L.Location) Bounds {
 	return BoundsFromSlice(locs)
 }
 
-func (b Bounds) ForEach(forEach func(loc L.Location)) {
-	for y := b.Ymin; y <= b.Ymax; y++ {
-		for x := b.Xmin; x <= b.Xmax; x++ {
+func BoundsEmpty() Bounds {
+	return bounds{I.Empty(), I.Empty()}
+}
+
+func boundsFromLimits(xmin, xmax, ymin, ymax int) Bounds {
+	return bounds{I.New(xmin, xmax), I.New(ymin, ymax)}
+}
+
+func (b bounds) ForEach(forEach func(loc L.Location)) {
+	for y := b.Y.Lower(); y <= b.Y.Upper(); y++ {
+		for x := b.X.Lower(); x <= b.X.Upper(); x++ {
 			loc := L.New(x, y)
 			forEach(loc)
 		}

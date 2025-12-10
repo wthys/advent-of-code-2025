@@ -92,33 +92,16 @@ func (g *Grid[T]) ForEach(forEach ForEachFunction[T]) {
 // Returns an error when there are no stored values.
 func (g *Grid[T]) Bounds() (Bounds, error) {
 	if len(g.data) == 0 {
-		return Bounds{}, fmt.Errorf("no values in grid")
+		return BoundsEmpty(), fmt.Errorf("no values in grid")
 	}
 
-	bounds := Bounds{0, 0, 0, 0}
+	bounds := BoundsEmpty()
 	found := false
 	apply := func(loc L.Location, _ T) {
+		bounds = bounds.Accomodate(loc)
+
 		if !found {
-			bounds.Xmin = loc.X
-			bounds.Xmax = loc.X
-			bounds.Ymin = loc.Y
-			bounds.Ymax = loc.Y
 			found = true
-			return
-		}
-
-		if loc.X < bounds.Xmin {
-			bounds.Xmin = loc.X
-		}
-		if loc.X > bounds.Xmax {
-			bounds.Xmax = loc.X
-		}
-
-		if loc.Y < bounds.Ymin {
-			bounds.Ymin = loc.Y
-		}
-		if loc.Y > bounds.Ymax {
-			bounds.Ymax = loc.Y
 		}
 	}
 	g.ForEach(apply)
@@ -158,8 +141,10 @@ func (g *Grid[T]) PrintFuncWithLoc(stringer func(L.Location, T, error) string) {
 }
 
 func (g *Grid[T]) PrintBoundsFuncWithLoc(bounds Bounds, stringer func(L.Location, T, error) string) {
-	for y := bounds.Ymin; y <= bounds.Ymax; y++ {
-		for x := bounds.Xmin; x <= bounds.Xmax; x++ {
+	min := bounds.TopLeft()
+	max := bounds.BottomRight()
+	for y := min.Y; y <= max.Y; y++ {
+		for x := min.X; x <= max.X; x++ {
 			pos := L.New(x, y)
 			val, err := g.Get(pos)
 			fmt.Print(stringer(pos, val, err))

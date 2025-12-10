@@ -174,7 +174,7 @@ func TestBounds(t *testing.T) {
 	g.Set(br, 4)
 	g.Set(md, 8)
 
-	want := Bounds{1, 3, 2, 7}
+	want := boundsFromLimits(1, 3, 2, 7)
 
 	bounds, err := g.Bounds()
 
@@ -186,11 +186,10 @@ func TestBounds(t *testing.T) {
 func TestBoundsEmpty(t *testing.T) {
 	g := New[int]()
 
-	want := Bounds{0, 0, 0, 0}
-
 	bounds, err := g.Bounds()
-	if bounds != want || err == nil {
-		t.Fatalf("g.Bounds() = %v, %v, want %v, %v", bounds, err != nil, want, true)
+	empty := bounds.IsEmpty()
+	if !empty || err == nil {
+		t.Fatalf("g.Bounds() = %v, %v, want %v, %v", bounds, err != nil, BoundsEmpty(), true)
 	}
 }
 
