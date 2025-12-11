@@ -1,7 +1,11 @@
 package day11
 
 import (
+	"fmt"
+
 	"github.com/wthys/advent-of-code-2025/solver"
+	"github.com/wthys/advent-of-code-2025/util"
+	PF "github.com/wthys/advent-of-code-2025/pathfinding"
 )
 
 type solution struct{}
@@ -15,9 +19,55 @@ func (s solution) Day() string {
 }
 
 func (s solution) Part1(input []string, opts solver.Options) (string, error) {
-	return solver.NotImplemented()
+	connections, err := readInput(input)
+	if err != nil {
+		return solver.Error(err)
+	}
+
+	bfs := PF.ConstructBreadthFirst("you", connections.NeejberFunc())
+
+	paths := bfs.AllPathsTo("out")
+
+	return solver.Solved(len(paths))
 }
 
 func (s solution) Part2(input []string, opts solver.Options) (string, error) {
 	return solver.NotImplemented()
+}
+
+type (
+	Connections map[string][]string
+)
+
+func (con Connections) Neejbers(device string) []string {
+	n, ok := con[device]
+	if ok {
+		return n
+	}
+	return []string{}
+}
+
+func (con Connections) NeejberFunc() PF.NeejberFunc[string] {
+	return func (node string) []string {
+		return con.Neejbers(node)
+	}
+}
+
+func readInput(input []string) (Connections, error) {
+	connections := Connections{}
+
+	for _, line := range input {
+		labels := util.ExtractRegex("[a-zA-Z]+", line)
+		if len(labels) == 0 {
+			continue
+		}
+
+		connections[labels[0]] = labels[1:]
+	}
+
+	if len(connections) == 0 {
+		return Connections{}, fmt.Errorf("no connections found")
+	}
+
+	return connections, nil
 }
